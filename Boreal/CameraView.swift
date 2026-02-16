@@ -1,5 +1,6 @@
 import AVFoundation
 import AppKit
+import Combine
 import SwiftUI
 
 struct CameraView: View {
