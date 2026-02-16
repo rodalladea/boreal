@@ -70,6 +70,66 @@
           }
         }
       }
+    },
+    "A minimal floating camera overlay for macOS.\nPerfect for screen recordings." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uma câmera flutuante e minimalista para macOS.\nPerfeita para gravações de tela."
+          }
+        }
+      }
+    },
+    "About Boreal" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sobre o Boreal"
+          }
+        }
+      }
+    },
+    "Hide Boreal" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ocultar Boreal"
+          }
+        }
+      }
+    },
+    "Hide Others" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ocultar Outros"
+          }
+        }
+      }
+    },
+    "Show All" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar Tudo"
+          }
+        }
+      }
+    },
+    "Quit Boreal" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Encerrar Boreal"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

@@ -1,71 +1,15 @@
 import SwiftUI
 import AppKit
 import AVFoundation
+import Combine
 
 @main
 struct BorealApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-    @ObservedObject private var cameraManager = CameraManager.shared
 
     var body: some Scene {
         Settings {
             EmptyView()
-        }
-        .commands {
-            CommandGroup(replacing: .newItem) {}
-            CommandGroup(replacing: .undoRedo) {}
-            CommandGroup(replacing: .pasteboard) {}
-            CommandGroup(replacing: .textEditing) {}
-            CommandGroup(replacing: .sidebar) {}
-            CommandGroup(replacing: .help) {}
-
-            CommandMenu("Camera") {
-                ForEach(Array(cameraManager.availableCameras.enumerated()), id: \.element.uniqueID) { index, camera in
-                    CameraMenuItem(
-                        camera: camera,
-                        isSelected: cameraManager.currentCamera?.uniqueID == camera.uniqueID,
-                        index: index
-                    ) {
-                        cameraManager.switchCamera(to: camera)
-                    }
-                }
-
-                if cameraManager.availableCameras.isEmpty {
-                    Text("No cameras available")
-                        .foregroundColor(.secondary)
-                }
-            }
-        }
-    }
-}
-
-struct CameraMenuItem: View {
-    let camera: AVCaptureDevice
-    let isSelected: Bool
-    let index: Int
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            HStack {
-                if isSelected {
-                    Image(systemName: "checkmark")
-                }
-                Text(camera.localizedName)
-            }
-        }
-        .modifier(CameraShortcutModifier(index: index))
-    }
-}
-
-struct CameraShortcutModifier: ViewModifier {
-    let index: Int
-
-    func body(content: Content) -> some View {
-        if index < 9 {
-            content.keyboardShortcut(KeyEquivalent(Character(String(index + 1))), modifiers: .command)
-        } else {
-            content
         }
     }
 }
@@ -74,8 +18,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var overlayWindow: NSWindow?
     private var globalMonitor: Any?
     private var localMonitor: Any?
+    private var cancellables = Set<AnyCancellable>()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        buildMenuBar()
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             NSApplication.shared.windows.first?.close()
             self.createOverlayWindow()
@@ -89,7 +36,164 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         )
 
         setupGlobalShortcuts()
+
+        CameraManager.shared.$availableCameras
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in self?.updateCameraMenu() }
+            .store(in: &cancellables)
+
+        CameraManager.shared.$currentCamera
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in self?.updateCameraMenu() }
+            .store(in: &cancellables)
     }
+
+    // MARK: - Menu Bar
+
+    private func buildMenuBar() {
+        let mainMenu = NSMenu()
+
+        let appMenuItem = NSMenuItem()
+        appMenuItem.submenu = buildAppMenu()
+        mainMenu.addItem(appMenuItem)
+
+        let cameraMenuItem = NSMenuItem()
+        cameraMenuItem.submenu = buildCameraMenu()
+        mainMenu.addItem(cameraMenuItem)
+
+        NSApplication.shared.mainMenu = mainMenu
+    }
+
+    private func buildAppMenu() -> NSMenu {
+        let menu = NSMenu()
+
+        let aboutItem = NSMenuItem(
+            title: String(localized: "About Boreal"),
+            action: #selector(showAboutPanel(_:)),
+            keyEquivalent: ""
+        )
+        aboutItem.target = self
+        menu.addItem(aboutItem)
+
+        menu.addItem(.separator())
+
+        let hideItem = NSMenuItem(
+            title: String(localized: "Hide Boreal"),
+            action: #selector(NSApplication.hide(_:)),
+            keyEquivalent: "h"
+        )
+        menu.addItem(hideItem)
+
+        let hideOthersItem = NSMenuItem(
+            title: String(localized: "Hide Others"),
+            action: #selector(NSApplication.hideOtherApplications(_:)),
+            keyEquivalent: "h"
+        )
+        hideOthersItem.keyEquivalentModifierMask = [.command, .option]
+        menu.addItem(hideOthersItem)
+
+        let showAllItem = NSMenuItem(
+            title: String(localized: "Show All"),
+            action: #selector(NSApplication.unhideAllApplications(_:)),
+            keyEquivalent: ""
+        )
+        menu.addItem(showAllItem)
+
+        menu.addItem(.separator())
+
+        let quitItem = NSMenuItem(
+            title: String(localized: "Quit Boreal"),
+            action: #selector(NSApplication.terminate(_:)),
+            keyEquivalent: "q"
+        )
+        menu.addItem(quitItem)
+
+        return menu
+    }
+
+    private func buildCameraMenu() -> NSMenu {
+        let menu = NSMenu(title: String(localized: "Camera"))
+        populateCameraMenu(menu)
+        return menu
+    }
+
+    private func populateCameraMenu(_ menu: NSMenu) {
+        menu.removeAllItems()
+
+        let cameras = CameraManager.shared.availableCameras
+        let currentId = CameraManager.shared.currentCamera?.uniqueID
+
+        if cameras.isEmpty {
+            let emptyItem = NSMenuItem(
+                title: String(localized: "No cameras available"),
+                action: nil,
+                keyEquivalent: ""
+            )
+            emptyItem.isEnabled = false
+            menu.addItem(emptyItem)
+            return
+        }
+
+        for (index, camera) in cameras.enumerated() {
+            let item = NSMenuItem(
+                title: camera.localizedName,
+                action: #selector(cameraMenuItemClicked(_:)),
+                keyEquivalent: index < 9 ? "\(index + 1)" : ""
+            )
+            item.target = self
+            item.tag = index
+            item.state = camera.uniqueID == currentId ? .on : .off
+            menu.addItem(item)
+        }
+    }
+
+    private func updateCameraMenu() {
+        guard let mainMenu = NSApplication.shared.mainMenu,
+              mainMenu.items.count > 1,
+              let cameraMenu = mainMenu.items[1].submenu
+        else { return }
+
+        populateCameraMenu(cameraMenu)
+    }
+
+    @objc private func cameraMenuItemClicked(_ sender: NSMenuItem) {
+        let cameras = CameraManager.shared.availableCameras
+        guard sender.tag < cameras.count else { return }
+        CameraManager.shared.switchCamera(to: cameras[sender.tag])
+    }
+
+    // MARK: - About
+
+    @objc private func showAboutPanel(_ sender: Any?) {
+        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0.0"
+
+        let description = String(localized: "A minimal floating camera overlay for macOS.\nPerfect for screen recordings.")
+
+        let credits = NSAttributedString(
+            string: description,
+            attributes: [
+                .font: NSFont.systemFont(ofSize: 11),
+                .foregroundColor: NSColor.secondaryLabelColor
+            ]
+        )
+
+        NSApplication.shared.orderFrontStandardAboutPanel(options: [
+            .applicationName: "Boreal",
+            .applicationVersion: version,
+            .version: "",
+            .credits: credits,
+            .applicationIcon: NSApplication.shared.applicationIconImage as Any
+        ])
+    }
+
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        if let panel = overlayWindow {
+            panel.orderFrontRegardless()
+        }
+        return false
+    }
+
+    // MARK: - Global Shortcuts
 
     private func setupGlobalShortcuts() {
         globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { [weak self] event in
@@ -125,6 +229,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         CameraManager.shared.switchCamera(to: cameras[index])
         return true
     }
+
+    // MARK: - Window
 
     @objc private func screenParametersDidChange(_ notification: Notification) {
         repositionWindow()
