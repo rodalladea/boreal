@@ -1,0 +1,76 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Camera" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Câmera"
+          }
+        }
+      }
+    },
+    "No cameras available" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhuma câmera disponível"
+          }
+        }
+      }
+    },
+    "Camera permission required" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permissão de câmera necessária"
+          }
+        }
+      }
+    },
+    "Please allow camera access in settings" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Por favor, permita o acesso à câmera nas configurações"
+          }
+        }
+      }
+    },
+    "Initializing camera..." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inicializando câmera..."
+          }
+        }
+      }
+    },
+    "Camera not available" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Câmera não disponível"
+          }
+        }
+      }
+    },
+    "Check if your Mac has a connected camera" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verifique se o seu Mac possui uma câmera conectada"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

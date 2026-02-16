@@ -7,13 +7,13 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		6622CC0F2F25CB6800F20743 /* floatam.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = floatam.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		6622CC0F2F25CB6800F20743 /* Boreal.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Boreal.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		6622CC112F25CB6800F20743 /* floatam */ = {
+		6622CC112F25CB6800F20743 /* Boreal */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = floatam;
+			path = Boreal;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -32,7 +32,7 @@
 		6622CC062F25CB6700F20743 = {
 			isa = PBXGroup;
 			children = (
-				6622CC112F25CB6800F20743 /* floatam */,
+				6622CC112F25CB6800F20743 /* Boreal */,
 				6622CC102F25CB6800F20743 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -40,7 +40,7 @@
 		6622CC102F25CB6800F20743 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				6622CC0F2F25CB6800F20743 /* floatam.app */,
+				6622CC0F2F25CB6800F20743 /* Boreal.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -48,9 +48,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		6622CC0E2F25CB6800F20743 /* floatam */ = {
+		6622CC0E2F25CB6800F20743 /* Boreal */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 6622CC1A2F25CB6A00F20743 /* Build configuration list for PBXNativeTarget "floatam" */;
+			buildConfigurationList = 6622CC1A2F25CB6A00F20743 /* Build configuration list for PBXNativeTarget "Boreal" */;
 			buildPhases = (
 				6622CC0B2F25CB6800F20743 /* Sources */,
 				6622CC0C2F25CB6800F20743 /* Frameworks */,
@@ -61,13 +61,13 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				6622CC112F25CB6800F20743 /* floatam */,
+				6622CC112F25CB6800F20743 /* Boreal */,
 			);
-			name = floatam;
+			name = Boreal;
 			packageProductDependencies = (
 			);
-			productName = floatam;
-			productReference = 6622CC0F2F25CB6800F20743 /* floatam.app */;
+			productName = Boreal;
+			productReference = 6622CC0F2F25CB6800F20743 /* Boreal.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -85,11 +85,12 @@
 					};
 				};
 			};
-			buildConfigurationList = 6622CC0A2F25CB6700F20743 /* Build configuration list for PBXProject "floatam" */;
+			buildConfigurationList = 6622CC0A2F25CB6700F20743 /* Build configuration list for PBXProject "Boreal" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				"pt-BR",
 				Base,
 			);
 			mainGroup = 6622CC062F25CB6700F20743;
@@ -99,7 +100,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				6622CC0E2F25CB6800F20743 /* floatam */,
+				6622CC0E2F25CB6800F20743 /* Boreal */,
 			);
 		};
 /* End PBXProject section */
@@ -248,6 +249,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Boreal/Boreal.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -255,13 +257,14 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "This app needs access to your camera to show live video.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = catapio.floatam;
+				PRODUCT_BUNDLE_IDENTIFIER = catapio.boreal;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -278,6 +281,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Boreal/Boreal.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -285,13 +289,14 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "This app needs access to your camera to show live video.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = catapio.floatam;
+				PRODUCT_BUNDLE_IDENTIFIER = catapio.boreal;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -306,7 +311,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		6622CC0A2F25CB6700F20743 /* Build configuration list for PBXProject "floatam" */ = {
+		6622CC0A2F25CB6700F20743 /* Build configuration list for PBXProject "Boreal" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				6622CC182F25CB6A00F20743 /* Debug */,
@@ -315,7 +320,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		6622CC1A2F25CB6A00F20743 /* Build configuration list for PBXNativeTarget "floatam" */ = {
+		6622CC1A2F25CB6A00F20743 /* Build configuration list for PBXNativeTarget "Boreal" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				6622CC1B2F25CB6A00F20743 /* Debug */,

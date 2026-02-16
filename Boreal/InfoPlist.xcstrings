@@ -1,0 +1,16 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "NSCameraUsageDescription" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este app precisa acessar sua câmera para mostrar o vídeo ao vivo."
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}
