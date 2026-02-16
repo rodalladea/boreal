@@ -72,6 +72,8 @@ struct CameraShortcutModifier: ViewModifier {
 
 class AppDelegate: NSObject, NSApplicationDelegate {
     var overlayWindow: NSWindow?
+    private var globalMonitor: Any?
+    private var localMonitor: Any?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
@@ -85,6 +87,43 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             name: NSApplication.didChangeScreenParametersNotification,
             object: nil
         )
+
+        setupGlobalShortcuts()
+    }
+
+    private func setupGlobalShortcuts() {
+        globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            self?.handleCameraShortcut(event)
+        }
+
+        localMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            if self?.handleCameraShortcut(event) == true {
+                return nil
+            }
+            return event
+        }
+    }
+
+    @discardableResult
+    private func handleCameraShortcut(_ event: NSEvent) -> Bool {
+        guard event.modifierFlags.contains(.command),
+              !event.modifierFlags.contains(.shift),
+              !event.modifierFlags.contains(.option),
+              !event.modifierFlags.contains(.control),
+              let characters = event.charactersIgnoringModifiers,
+              let digit = Int(characters),
+              digit >= 1 && digit <= 9
+        else {
+            return false
+        }
+
+        let index = digit - 1
+        let cameras = CameraManager.shared.availableCameras
+
+        guard index < cameras.count else { return false }
+
+        CameraManager.shared.switchCamera(to: cameras[index])
+        return true
     }
 
     @objc private func screenParametersDidChange(_ notification: Notification) {
@@ -146,5 +185,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     deinit {
         NotificationCenter.default.removeObserver(self)
+        if let globalMonitor { NSEvent.removeMonitor(globalMonitor) }
+        if let localMonitor { NSEvent.removeMonitor(localMonitor) }
     }
 }
