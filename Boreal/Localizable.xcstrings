@@ -1,76 +1,6 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "Camera" : {
-      "localizations" : {
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Câmera"
-          }
-        }
-      }
-    },
-    "No cameras available" : {
-      "localizations" : {
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nenhuma câmera disponível"
-          }
-        }
-      }
-    },
-    "Camera permission required" : {
-      "localizations" : {
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Permissão de câmera necessária"
-          }
-        }
-      }
-    },
-    "Please allow camera access in settings" : {
-      "localizations" : {
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Por favor, permita o acesso à câmera nas configurações"
-          }
-        }
-      }
-    },
-    "Initializing camera..." : {
-      "localizations" : {
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Inicializando câmera..."
-          }
-        }
-      }
-    },
-    "Camera not available" : {
-      "localizations" : {
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Câmera não disponível"
-          }
-        }
-      }
-    },
-    "Check if your Mac has a connected camera" : {
-      "localizations" : {
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Verifique se o seu Mac possui uma câmera conectada"
-          }
-        }
-      }
-    },
     "A minimal floating camera overlay for macOS.\nPerfect for screen recordings." : {
       "localizations" : {
         "pt-BR" : {
@@ -87,6 +17,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sobre o Boreal"
+          }
+        }
+      }
+    },
+    "Camera" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Câmera"
+          }
+        }
+      }
+    },
+    "Camera not available" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Câmera não disponível"
+          }
+        }
+      }
+    },
+    "Camera permission required" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permissão de câmera necessária"
+          }
+        }
+      }
+    },
+    "Check if your Mac has a connected camera" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verifique se o seu Mac possui uma câmera conectada"
           }
         }
       }
@@ -111,12 +81,72 @@
         }
       }
     },
-    "Show All" : {
+    "High" : {
       "localizations" : {
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mostrar Tudo"
+            "value" : "Alta"
+          }
+        }
+      }
+    },
+    "Initializing camera..." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inicializando câmera..."
+          }
+        }
+      }
+    },
+    "Low" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Baixa"
+          }
+        }
+      }
+    },
+    "Medium" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Média"
+          }
+        }
+      }
+    },
+    "No cameras available" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhuma câmera disponível"
+          }
+        }
+      }
+    },
+    "Please allow camera access in settings" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Por favor, permita o acesso à câmera nas configurações"
+          }
+        }
+      }
+    },
+    "Quality" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Qualidade"
           }
         }
       }
@@ -127,6 +157,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Encerrar Boreal"
+          }
+        }
+      }
+    },
+    "Recording" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gravando"
+          }
+        }
+      }
+    },
+    "Show All" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar Tudo"
+          }
+        }
+      }
+    },
+    "Start Recording" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Iniciar Gravação"
+          }
+        }
+      }
+    },
+    "Stop Recording" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Parar Gravação"
           }
         }
       }

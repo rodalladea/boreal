@@ -1,0 +1,28 @@
+# Build
+build/
+DerivedData/
+
+# Xcode user data
+*.xcuserstate
+xcuserdata/
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+*.xccheckout
+*.xcscmblueprint
+
+# macOS
+.DS_Store
+
+# Export
+ExportOptions.plist
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+.agents

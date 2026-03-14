@@ -42,6 +42,24 @@
           }
         }
       }
+    },
+    "NSScreenCaptureUsageDescription" : {
+      "comment" : "Privacy - Screen Capture Usage Description",
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "This app needs screen recording access to capture your screen."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Este app precisa de acesso à gravação de tela para capturar sua tela."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

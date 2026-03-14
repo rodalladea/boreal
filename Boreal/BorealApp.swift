@@ -19,6 +19,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var globalMonitor: Any?
     private var localMonitor: Any?
     private var cancellables = Set<AnyCancellable>()
+    private var recordingToggleItem: NSMenuItem?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         buildMenuBar()
@@ -46,6 +47,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in self?.updateCameraMenu() }
             .store(in: &cancellables)
+
+        ScreenRecorder.shared.$isRecording
+            .receive(on: RunLoop.main)
+            .sink { [weak self] isRecording in self?.updateRecordingToggleItem(isRecording: isRecording) }
+            .store(in: &cancellables)
+
+        ScreenRecorder.shared.$quality
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in self?.updateRecordingQualityMenu() }
+            .store(in: &cancellables)
     }
 
     // MARK: - Menu Bar
@@ -60,6 +71,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let cameraMenuItem = NSMenuItem()
         cameraMenuItem.submenu = buildCameraMenu()
         mainMenu.addItem(cameraMenuItem)
+
+        let recordingMenuItem = NSMenuItem()
+        recordingMenuItem.submenu = buildRecordingMenu()
+        mainMenu.addItem(recordingMenuItem)
 
         NSApplication.shared.mainMenu = mainMenu
     }
@@ -110,6 +125,87 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         return menu
     }
+
+    // MARK: - Recording Menu
+
+    private func buildRecordingMenu() -> NSMenu {
+        let menu = NSMenu(title: String(localized: "Recording"))
+
+        let qualityItem = NSMenuItem(title: String(localized: "Quality"), action: nil, keyEquivalent: "")
+        qualityItem.submenu = buildQualitySubmenu()
+        menu.addItem(qualityItem)
+
+        menu.addItem(.separator())
+
+        let toggleItem = NSMenuItem(
+            title: String(localized: "Start Recording"),
+            action: #selector(toggleRecording(_:)),
+            keyEquivalent: "r"
+        )
+        toggleItem.keyEquivalentModifierMask = [.command, .shift]
+        toggleItem.target = self
+        menu.addItem(toggleItem)
+
+        self.recordingToggleItem = toggleItem
+
+        return menu
+    }
+
+    private func buildQualitySubmenu() -> NSMenu {
+        let menu = NSMenu(title: String(localized: "Quality"))
+        let current = ScreenRecorder.shared.quality
+
+        for quality in RecordingQuality.allCases {
+            let item = NSMenuItem(
+                title: quality.localizedName,
+                action: #selector(qualityMenuItemClicked(_:)),
+                keyEquivalent: ""
+            )
+            item.target = self
+            item.representedObject = quality
+            item.state = quality == current ? .on : .off
+            menu.addItem(item)
+        }
+
+        return menu
+    }
+
+    private func updateRecordingToggleItem(isRecording: Bool) {
+        recordingToggleItem?.title = isRecording
+            ? String(localized: "Stop Recording")
+            : String(localized: "Start Recording")
+    }
+
+    private func updateRecordingQualityMenu() {
+        guard let mainMenu = NSApplication.shared.mainMenu,
+              mainMenu.items.count > 2,
+              let recordingMenu = mainMenu.items[2].submenu,
+              let qualityItem = recordingMenu.items.first,
+              let qualitySubmenu = qualityItem.submenu
+        else { return }
+
+        let current = ScreenRecorder.shared.quality
+        for item in qualitySubmenu.items {
+            if let q = item.representedObject as? RecordingQuality {
+                item.state = q == current ? .on : .off
+            }
+        }
+    }
+
+    @objc private func toggleRecording(_ sender: NSMenuItem) {
+        if ScreenRecorder.shared.isRecording {
+            ScreenRecorder.shared.stopRecording()
+        } else {
+            ScreenRecorder.shared.startRecording()
+        }
+    }
+
+    @objc private func qualityMenuItemClicked(_ sender: NSMenuItem) {
+        guard let quality = sender.representedObject as? RecordingQuality else { return }
+        ScreenRecorder.shared.quality = quality
+    }
+
+    // MARK: - Camera Menu
 
     private func buildCameraMenu() -> NSMenu {
         let menu = NSMenu(title: String(localized: "Camera"))
