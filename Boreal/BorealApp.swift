@@ -16,6 +16,7 @@ struct BorealApp: App {
 
 class AppDelegate: NSObject, NSApplicationDelegate {
     var overlayWindow: NSWindow?
+    var controlsWindow: NSWindow?
     private var globalMonitor: Any?
     private var localMonitor: Any?
     private var cancellables = Set<AnyCancellable>()
@@ -342,12 +343,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let yPos = screen.visibleFrame.maxY - windowSize.height - padding
 
         panel.setFrameOrigin(NSPoint(x: xPos, y: yPos))
+
+        if let controls = controlsWindow {
+            controls.setFrameOrigin(NSPoint(x: xPos, y: yPos - controls.frame.height - 4))
+        }
     }
 
     func createOverlayWindow() {
         guard let screen = NSScreen.main else { return }
 
         let windowSize = NSSize(width: 320, height: 240)
+        let controlsHeight: CGFloat = 44
         let padding: CGFloat = 20
 
         let xPos = screen.visibleFrame.maxX - windowSize.width - padding
@@ -380,9 +386,60 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         hostingView.layer?.masksToBounds = true
 
         panel.contentView = hostingView
+
+        // Controls window — sharingType = .none exclui da captura de tela
+        // Janela independente (não childWindow) para preservar o sharingType
+        let controlsFrame = NSRect(
+            x: frame.origin.x,
+            y: frame.origin.y - controlsHeight - 4,
+            width: windowSize.width,
+            height: controlsHeight
+        )
+
+        let controlsPanel = NSPanel(
+            contentRect: controlsFrame,
+            styleMask: [.borderless, .nonactivatingPanel],
+            backing: .buffered,
+            defer: false
+        )
+
+        controlsPanel.sharingType = .none
+        controlsPanel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+        controlsPanel.level = .floating
+        controlsPanel.isFloatingPanel = true
+        controlsPanel.hidesOnDeactivate = false
+        controlsPanel.isOpaque = false
+        controlsPanel.backgroundColor = .clear
+        controlsPanel.hasShadow = false
+
+        let controlsHostingView = NSHostingView(rootView: RecordingControlsView())
+        controlsHostingView.frame = NSRect(origin: .zero, size: CGSize(width: windowSize.width, height: controlsHeight))
+        controlsPanel.contentView = controlsHostingView
+
         panel.orderFrontRegardless()
+        controlsPanel.orderFrontRegardless()
 
         self.overlayWindow = panel
+        self.controlsWindow = controlsPanel
+
+        // Informa o ID da janela de controles ao ScreenRecorder para excluí-la da captura
+        ScreenRecorder.shared.controlsWindowID = CGWindowID(controlsPanel.windowNumber)
+
+        // Sincroniza posição quando a câmera se mover
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(overlayWindowDidMove(_:)),
+            name: NSWindow.didMoveNotification,
+            object: panel
+        )
+    }
+
+    @objc private func overlayWindowDidMove(_ notification: Notification) {
+        guard let camera = overlayWindow, let controls = controlsWindow else { return }
+        controls.setFrameOrigin(NSPoint(
+            x: camera.frame.origin.x,
+            y: camera.frame.origin.y - controls.frame.height - 4
+        ))
     }
 
     deinit {
