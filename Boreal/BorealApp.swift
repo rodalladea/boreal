@@ -21,6 +21,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var localMonitor: Any?
     private var cancellables = Set<AnyCancellable>()
     private var recordingToggleItem: NSMenuItem?
+    private var systemAudioItem: NSMenuItem?
+    private var microphoneToggleItem: NSMenuItem?
+    private weak var cameraMenu: NSMenu?
+    private weak var microphoneMenu: NSMenu?
+    private weak var resolutionSubmenu: NSMenu?
+    private weak var fpsSubmenu: NSMenu?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         buildMenuBar()
@@ -162,23 +168,28 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let menu = NSMenu(title: String(localized: "Record"))
 
         let resolutionItem = NSMenuItem(title: String(localized: "Resolution"), action: nil, keyEquivalent: "")
-        resolutionItem.submenu = buildResolutionSubmenu()
+        let resSub = buildResolutionSubmenu()
+        resolutionItem.submenu = resSub
+        resolutionSubmenu = resSub
         menu.addItem(resolutionItem)
 
         let fpsItem = NSMenuItem(title: "FPS", action: nil, keyEquivalent: "")
-        fpsItem.submenu = buildFPSSubmenu()
+        let fpsSub = buildFPSSubmenu()
+        fpsItem.submenu = fpsSub
+        fpsSubmenu = fpsSub
         menu.addItem(fpsItem)
 
         menu.addItem(.separator())
 
-        let systemAudioItem = NSMenuItem(
+        let sysAudioItem = NSMenuItem(
             title: String(localized: "System Audio"),
             action: #selector(toggleSystemAudio(_:)),
             keyEquivalent: ""
         )
-        systemAudioItem.target = self
-        systemAudioItem.state = ScreenRecorder.shared.recordSystemAudio ? .on : .off
-        menu.addItem(systemAudioItem)
+        sysAudioItem.target = self
+        sysAudioItem.state = ScreenRecorder.shared.recordSystemAudio ? .on : .off
+        menu.addItem(sysAudioItem)
+        systemAudioItem = sysAudioItem
 
         let micItem = NSMenuItem(
             title: String(localized: "Microphone"),
@@ -188,6 +199,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         micItem.target = self
         micItem.state = ScreenRecorder.shared.recordMicrophone ? .on : .off
         menu.addItem(micItem)
+        microphoneToggleItem = micItem
 
         menu.addItem(.separator())
 
@@ -199,8 +211,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         toggleItem.keyEquivalentModifierMask = [.command, .shift]
         toggleItem.target = self
         menu.addItem(toggleItem)
-
-        self.recordingToggleItem = toggleItem
+        recordingToggleItem = toggleItem
 
         return menu
     }
@@ -238,36 +249,22 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func updateRecordingSettingsMenu() {
-        guard let mainMenu = NSApplication.shared.mainMenu,
-              mainMenu.items.count > 3,
-              let recordingMenu = mainMenu.items[3].submenu
-        else { return }
-
-        if let resSubmenu = recordingMenu.items.first?.submenu {
-            let current = ScreenRecorder.shared.resolution
-            for item in resSubmenu.items {
-                if let r = item.representedObject as? RecordingResolution {
-                    item.state = r == current ? .on : .off
-                }
+        let currentResolution = ScreenRecorder.shared.resolution
+        resolutionSubmenu?.items.forEach { item in
+            if let r = item.representedObject as? RecordingResolution {
+                item.state = r == currentResolution ? .on : .off
             }
         }
 
-        if recordingMenu.items.count > 1, let fpsSubmenu = recordingMenu.items[1].submenu {
-            let current = ScreenRecorder.shared.fps
-            for item in fpsSubmenu.items {
-                if let f = item.representedObject as? RecordingFPS {
-                    item.state = f == current ? .on : .off
-                }
+        let currentFPS = ScreenRecorder.shared.fps
+        fpsSubmenu?.items.forEach { item in
+            if let f = item.representedObject as? RecordingFPS {
+                item.state = f == currentFPS ? .on : .off
             }
         }
 
-        // Items: 0=Resolution, 1=FPS, 2=separator, 3=SystemAudio, 4=Microphone, 5=separator, ...
-        if recordingMenu.items.count > 3 {
-            recordingMenu.items[3].state = ScreenRecorder.shared.recordSystemAudio ? .on : .off
-        }
-        if recordingMenu.items.count > 4 {
-            recordingMenu.items[4].state = ScreenRecorder.shared.recordMicrophone ? .on : .off
-        }
+        systemAudioItem?.state = ScreenRecorder.shared.recordSystemAudio ? .on : .off
+        microphoneToggleItem?.state = ScreenRecorder.shared.recordMicrophone ? .on : .off
     }
 
     @objc private func toggleRecording(_ sender: NSMenuItem) {
@@ -300,6 +297,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func buildCameraMenu() -> NSMenu {
         let menu = NSMenu(title: String(localized: "Camera"))
+        cameraMenu = menu
         populateCameraMenu(menu)
         return menu
     }
@@ -335,11 +333,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func updateCameraMenu() {
-        guard let mainMenu = NSApplication.shared.mainMenu,
-              mainMenu.items.count > 1,
-              let cameraMenu = mainMenu.items[1].submenu
-        else { return }
-
+        guard let cameraMenu else { return }
         populateCameraMenu(cameraMenu)
     }
 
@@ -353,6 +347,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func buildMicrophoneMenu() -> NSMenu {
         let menu = NSMenu(title: String(localized: "Microphone"))
+        microphoneMenu = menu
         populateMicrophoneMenu(menu)
         return menu
     }
@@ -388,12 +383,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func updateMicrophoneMenu() {
-        guard let mainMenu = NSApplication.shared.mainMenu,
-              mainMenu.items.count > 2,
-              let micMenu = mainMenu.items[2].submenu
-        else { return }
-
-        populateMicrophoneMenu(micMenu)
+        guard let microphoneMenu else { return }
+        populateMicrophoneMenu(microphoneMenu)
     }
 
     @objc private func microphoneMenuItemClicked(_ sender: NSMenuItem) {
@@ -486,7 +477,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let yPos = screen.visibleFrame.maxY - windowSize.height - padding
 
         panel.setFrameOrigin(NSPoint(x: xPos, y: yPos))
-        // controlsWindow é filho — segue automaticamente
+        // controlsWindow is a child window and follows the parent automatically
     }
 
     func createOverlayWindow() {
@@ -527,8 +518,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         panel.contentView = hostingView
 
-        // Controls window — sharingType = .none exclui da captura de tela
-        // Janela independente (não childWindow) para preservar o sharingType
+        // Controls window — sharingType = .none excludes it from screen capture
+        // Independent window (not a childWindow) to preserve sharingType
         let controlsFrame = NSRect(
             x: frame.origin.x,
             y: frame.origin.y - controlsHeight - 4,
@@ -556,15 +547,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         controlsHostingView.frame = NSRect(origin: .zero, size: CGSize(width: windowSize.width, height: controlsHeight))
         controlsPanel.contentView = controlsHostingView
 
-        // addChildWindow move em sincronia perfeita — exclusão da gravação é feita
-        // pelo SCContentFilter do ScreenCaptureKit pelo windowID, não pelo sharingType
+        // addChildWindow keeps both windows in perfect sync — recording exclusion is handled
+        // by SCContentFilter from ScreenCaptureKit using windowID, not sharingType
         panel.addChildWindow(controlsPanel, ordered: .above)
         panel.orderFrontRegardless()
 
         self.overlayWindow = panel
         self.controlsWindow = controlsPanel
 
-        // Informa o ID da janela de controles ao ScreenRecorder para excluí-la da captura
+        // Passes the controls window ID to ScreenRecorder so it can be excluded from capture
         ScreenRecorder.shared.controlsWindowID = CGWindowID(controlsPanel.windowNumber)
     }
 

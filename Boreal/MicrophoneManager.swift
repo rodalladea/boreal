@@ -36,21 +36,22 @@ class MicrophoneManager: ObservableObject {
         )
         let devices = discovery.devices
 
-        DispatchQueue.main.async {
-            self.availableMicrophones = devices
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            availableMicrophones = devices
 
-            if let current = self.currentMicrophone,
+            if let current = currentMicrophone,
                !devices.contains(where: { $0.uniqueID == current.uniqueID }) {
-                self.currentMicrophone = devices.first
-            } else if self.currentMicrophone == nil {
-                self.currentMicrophone = devices.first
+                currentMicrophone = devices.first
+            } else if currentMicrophone == nil {
+                currentMicrophone = devices.first
             }
         }
     }
 
     func switchMicrophone(to device: AVCaptureDevice) {
-        DispatchQueue.main.async {
-            self.currentMicrophone = device
+        Task { @MainActor [weak self] in
+            self?.currentMicrophone = device
         }
     }
 

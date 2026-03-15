@@ -50,6 +50,8 @@ enum RecordingFPS: Int, CaseIterable {
 class ScreenRecorder: NSObject, ObservableObject {
     static let shared = ScreenRecorder()
 
+    private override init() { super.init() }
+
     @Published var isRecording = false
     @Published var resolution: RecordingResolution = .native
     @Published var fps: RecordingFPS = .fps30
@@ -172,14 +174,15 @@ extension ScreenRecorder: SCRecordingOutputDelegate {
         stream = nil
         recordingOutput = nil
 
-        DispatchQueue.main.async {
-            self.recordingTimer?.invalidate()
-            self.recordingTimer = nil
-            self.recordingDuration = 0
-            self.isRecording = false
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            recordingTimer?.invalidate()
+            recordingTimer = nil
+            recordingDuration = 0
+            isRecording = false
 
-            guard let url = self.pendingVideoURL else { return }
-            self.pendingVideoURL = nil
+            guard let url = pendingVideoURL else { return }
+            pendingVideoURL = nil
             NSWorkspace.shared.open(url.deletingLastPathComponent())
         }
     }
@@ -188,12 +191,13 @@ extension ScreenRecorder: SCRecordingOutputDelegate {
         stream = nil
         recordingOutput = nil
 
-        DispatchQueue.main.async {
-            self.recordingTimer?.invalidate()
-            self.recordingTimer = nil
-            self.recordingDuration = 0
-            self.isRecording = false
-            self.pendingVideoURL = nil
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            recordingTimer?.invalidate()
+            recordingTimer = nil
+            recordingDuration = 0
+            isRecording = false
+            pendingVideoURL = nil
             print("[Boreal] Recording error: \(error.localizedDescription)")
         }
     }

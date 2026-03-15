@@ -16,11 +16,11 @@ struct CameraView: View {
                         .font(.system(size: 60))
                         .foregroundColor(.white)
 
-                    Text("Camera permission required")
+                    Text(String(localized: "Camera permission required"))
                         .font(.title2)
                         .foregroundColor(.white)
 
-                    Text("Please allow camera access in settings")
+                    Text(String(localized: "Please allow camera access in settings"))
                         .font(.body)
                         .foregroundColor(.white.opacity(0.8))
                         .multilineTextAlignment(.center)
@@ -35,7 +35,7 @@ struct CameraView: View {
                         .scaleEffect(1.5)
                         .padding()
 
-                    Text("Initializing camera...")
+                    Text(String(localized: "Initializing camera..."))
                         .font(.body)
                         .foregroundColor(.white)
                 }
@@ -47,11 +47,11 @@ struct CameraView: View {
                         .font(.system(size: 60))
                         .foregroundColor(.yellow)
 
-                    Text("Camera not available")
+                    Text(String(localized: "Camera not available"))
                         .font(.title2)
                         .foregroundColor(.white)
 
-                    Text("Check if your Mac has a connected camera")
+                    Text(String(localized: "Check if your Mac has a connected camera"))
                         .font(.body)
                         .foregroundColor(.white.opacity(0.8))
                         .multilineTextAlignment(.center)
@@ -144,7 +144,7 @@ class CameraManager: ObservableObject {
     private let sessionQueue = DispatchQueue(label: "camera.session.queue")
     private var wasRunningBeforeInterruption = false
 
-    init() {
+    private init() {
         setupNotifications()
         checkAuthorization()
     }
