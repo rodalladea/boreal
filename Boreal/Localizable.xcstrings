@@ -81,12 +81,12 @@
         }
       }
     },
-    "High" : {
+    "Native" : {
       "localizations" : {
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Alta"
+            "value" : "Nativa"
           }
         }
       }
@@ -101,22 +101,22 @@
         }
       }
     },
-    "Low" : {
+    "Record" : {
       "localizations" : {
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Baixa"
+            "value" : "Gravar"
           }
         }
       }
     },
-    "Medium" : {
+    "Resolution" : {
       "localizations" : {
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Média"
+            "value" : "Resolução"
           }
         }
       }
@@ -141,32 +141,12 @@
         }
       }
     },
-    "Quality" : {
-      "localizations" : {
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Qualidade"
-          }
-        }
-      }
-    },
     "Quit Boreal" : {
       "localizations" : {
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Encerrar Boreal"
-          }
-        }
-      }
-    },
-    "Recording" : {
-      "localizations" : {
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gravando"
           }
         }
       }

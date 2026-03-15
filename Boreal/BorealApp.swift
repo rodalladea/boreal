@@ -54,9 +54,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             .sink { [weak self] isRecording in self?.updateRecordingToggleItem(isRecording: isRecording) }
             .store(in: &cancellables)
 
-        ScreenRecorder.shared.$quality
+        ScreenRecorder.shared.$resolution
             .receive(on: RunLoop.main)
-            .sink { [weak self] _ in self?.updateRecordingQualityMenu() }
+            .sink { [weak self] _ in self?.updateRecordingSettingsMenu() }
+            .store(in: &cancellables)
+
+        ScreenRecorder.shared.$fps
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in self?.updateRecordingSettingsMenu() }
             .store(in: &cancellables)
     }
 
@@ -130,11 +135,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     // MARK: - Recording Menu
 
     private func buildRecordingMenu() -> NSMenu {
-        let menu = NSMenu(title: String(localized: "Recording"))
+        let menu = NSMenu(title: String(localized: "Record"))
 
-        let qualityItem = NSMenuItem(title: String(localized: "Quality"), action: nil, keyEquivalent: "")
-        qualityItem.submenu = buildQualitySubmenu()
-        menu.addItem(qualityItem)
+        let resolutionItem = NSMenuItem(title: String(localized: "Resolution"), action: nil, keyEquivalent: "")
+        resolutionItem.submenu = buildResolutionSubmenu()
+        menu.addItem(resolutionItem)
+
+        let fpsItem = NSMenuItem(title: "FPS", action: nil, keyEquivalent: "")
+        fpsItem.submenu = buildFPSSubmenu()
+        menu.addItem(fpsItem)
 
         menu.addItem(.separator())
 
@@ -152,22 +161,29 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         return menu
     }
 
-    private func buildQualitySubmenu() -> NSMenu {
-        let menu = NSMenu(title: String(localized: "Quality"))
-        let current = ScreenRecorder.shared.quality
-
-        for quality in RecordingQuality.allCases {
-            let item = NSMenuItem(
-                title: quality.localizedName,
-                action: #selector(qualityMenuItemClicked(_:)),
-                keyEquivalent: ""
-            )
+    private func buildResolutionSubmenu() -> NSMenu {
+        let menu = NSMenu(title: String(localized: "Resolution"))
+        let current = ScreenRecorder.shared.resolution
+        for res in RecordingResolution.allCases {
+            let item = NSMenuItem(title: res.localizedName, action: #selector(resolutionMenuItemClicked(_:)), keyEquivalent: "")
             item.target = self
-            item.representedObject = quality
-            item.state = quality == current ? .on : .off
+            item.representedObject = res
+            item.state = res == current ? .on : .off
             menu.addItem(item)
         }
+        return menu
+    }
 
+    private func buildFPSSubmenu() -> NSMenu {
+        let menu = NSMenu(title: "FPS")
+        let current = ScreenRecorder.shared.fps
+        for fps in RecordingFPS.allCases {
+            let item = NSMenuItem(title: fps.localizedName, action: #selector(fpsMenuItemClicked(_:)), keyEquivalent: "")
+            item.target = self
+            item.representedObject = fps
+            item.state = fps == current ? .on : .off
+            menu.addItem(item)
+        }
         return menu
     }
 
@@ -177,18 +193,27 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             : String(localized: "Start Recording")
     }
 
-    private func updateRecordingQualityMenu() {
+    private func updateRecordingSettingsMenu() {
         guard let mainMenu = NSApplication.shared.mainMenu,
               mainMenu.items.count > 2,
-              let recordingMenu = mainMenu.items[2].submenu,
-              let qualityItem = recordingMenu.items.first,
-              let qualitySubmenu = qualityItem.submenu
+              let recordingMenu = mainMenu.items[2].submenu
         else { return }
 
-        let current = ScreenRecorder.shared.quality
-        for item in qualitySubmenu.items {
-            if let q = item.representedObject as? RecordingQuality {
-                item.state = q == current ? .on : .off
+        if let resSubmenu = recordingMenu.items.first?.submenu {
+            let current = ScreenRecorder.shared.resolution
+            for item in resSubmenu.items {
+                if let r = item.representedObject as? RecordingResolution {
+                    item.state = r == current ? .on : .off
+                }
+            }
+        }
+
+        if recordingMenu.items.count > 1, let fpsSubmenu = recordingMenu.items[1].submenu {
+            let current = ScreenRecorder.shared.fps
+            for item in fpsSubmenu.items {
+                if let f = item.representedObject as? RecordingFPS {
+                    item.state = f == current ? .on : .off
+                }
             }
         }
     }
@@ -201,9 +226,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    @objc private func qualityMenuItemClicked(_ sender: NSMenuItem) {
-        guard let quality = sender.representedObject as? RecordingQuality else { return }
-        ScreenRecorder.shared.quality = quality
+    @objc private func resolutionMenuItemClicked(_ sender: NSMenuItem) {
+        guard let res = sender.representedObject as? RecordingResolution else { return }
+        ScreenRecorder.shared.resolution = res
+    }
+
+    @objc private func fpsMenuItemClicked(_ sender: NSMenuItem) {
+        guard let fps = sender.representedObject as? RecordingFPS else { return }
+        ScreenRecorder.shared.fps = fps
     }
 
     // MARK: - Camera Menu
@@ -343,10 +373,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let yPos = screen.visibleFrame.maxY - windowSize.height - padding
 
         panel.setFrameOrigin(NSPoint(x: xPos, y: yPos))
-
-        if let controls = controlsWindow {
-            controls.setFrameOrigin(NSPoint(x: xPos, y: yPos - controls.frame.height - 4))
-        }
+        // controlsWindow é filho — segue automaticamente
     }
 
     func createOverlayWindow() {
@@ -416,30 +443,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         controlsHostingView.frame = NSRect(origin: .zero, size: CGSize(width: windowSize.width, height: controlsHeight))
         controlsPanel.contentView = controlsHostingView
 
+        // addChildWindow move em sincronia perfeita — exclusão da gravação é feita
+        // pelo SCContentFilter do ScreenCaptureKit pelo windowID, não pelo sharingType
+        panel.addChildWindow(controlsPanel, ordered: .above)
         panel.orderFrontRegardless()
-        controlsPanel.orderFrontRegardless()
 
         self.overlayWindow = panel
         self.controlsWindow = controlsPanel
 
         // Informa o ID da janela de controles ao ScreenRecorder para excluí-la da captura
         ScreenRecorder.shared.controlsWindowID = CGWindowID(controlsPanel.windowNumber)
-
-        // Sincroniza posição quando a câmera se mover
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(overlayWindowDidMove(_:)),
-            name: NSWindow.didMoveNotification,
-            object: panel
-        )
-    }
-
-    @objc private func overlayWindowDidMove(_ notification: Notification) {
-        guard let camera = overlayWindow, let controls = controlsWindow else { return }
-        controls.setFrameOrigin(NSPoint(
-            x: camera.frame.origin.x,
-            y: camera.frame.origin.y - controls.frame.height - 4
-        ))
     }
 
     deinit {

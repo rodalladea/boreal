@@ -3,33 +3,60 @@ import AVFoundation
 import AppKit
 import Combine
 
-enum RecordingQuality: String, CaseIterable {
-    case low
-    case medium
-    case high
+enum RecordingResolution: String, CaseIterable {
+    case native = "native"
+    case p1440  = "1440p"
+    case p1080  = "1080p"
+    case p720   = "720p"
 
-    var minFrameInterval: CMTime {
+    func dimensions(for display: SCDisplay) -> (width: Int, height: Int) {
+        let scaleFactor: Int
+        if let mode = CGDisplayCopyDisplayMode(display.displayID) {
+            scaleFactor = mode.pixelWidth / mode.width
+        } else {
+            scaleFactor = 1
+        }
+
+        let ratio = Double(display.width) / Double(display.height)
+
         switch self {
-        case .low:    return CMTime(value: 1, timescale: 15)
-        case .medium: return CMTime(value: 1, timescale: 30)
-        case .high:   return CMTime(value: 1, timescale: 60)
+        case .native:
+            return (display.width * scaleFactor, display.height * scaleFactor)
+        case .p1440:
+            return (Int(1440.0 * ratio), 1440)
+        case .p1080:
+            return (Int(1080.0 * ratio), 1080)
+        case .p720:
+            return (Int(720.0 * ratio), 720)
         }
     }
 
     var localizedName: String {
         switch self {
-        case .low:    return String(localized: "Low")
-        case .medium: return String(localized: "Medium")
-        case .high:   return String(localized: "High")
+        case .native: return String(localized: "Native")
+        case .p1440:  return "1440p"
+        case .p1080:  return "1080p"
+        case .p720:   return "720p"
         }
     }
+}
+
+enum RecordingFPS: Int, CaseIterable {
+    case fps60 = 60
+    case fps30 = 30
+    case fps24 = 24
+    case fps15 = 15
+
+    var frameInterval: CMTime { CMTime(value: 1, timescale: CMTimeScale(rawValue)) }
+    var localizedName: String { "\(rawValue) fps" }
 }
 
 class ScreenRecorder: NSObject, ObservableObject {
     static let shared = ScreenRecorder()
 
     @Published var isRecording = false
-    @Published var quality: RecordingQuality = .medium
+    @Published var resolution: RecordingResolution = .native
+    @Published var fps: RecordingFPS = .fps30
     @Published var recordingDuration: TimeInterval = 0
 
     /// ID da janela de controles — preenchido pelo AppDelegate após criar a janela
@@ -58,10 +85,12 @@ class ScreenRecorder: NSObject, ObservableObject {
             let excludedWindows = content.windows.filter { $0.windowID == controlsWindowID }
             let filter = SCContentFilter(display: display, excludingWindows: excludedWindows)
 
+            let dims = resolution.dimensions(for: display)
             let streamConfig = SCStreamConfiguration()
-            streamConfig.width = display.width
-            streamConfig.height = display.height
-            streamConfig.minimumFrameInterval = quality.minFrameInterval
+            streamConfig.width = dims.width
+            streamConfig.height = dims.height
+            streamConfig.minimumFrameInterval = fps.frameInterval
+            streamConfig.captureResolution = .best
             streamConfig.showsCursor = true
 
             let url = makeOutputURL()
@@ -70,6 +99,7 @@ class ScreenRecorder: NSObject, ObservableObject {
             let outputConfig = SCRecordingOutputConfiguration()
             outputConfig.outputURL = url
             outputConfig.outputFileType = .mov
+            outputConfig.videoCodecType = .hevc
 
             let output = SCRecordingOutput(configuration: outputConfig, delegate: self)
             let stream = SCStream(filter: filter, configuration: streamConfig, delegate: nil)
