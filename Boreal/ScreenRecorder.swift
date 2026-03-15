@@ -16,18 +16,12 @@ enum RecordingResolution: String, CaseIterable {
         } else {
             scaleFactor = 1
         }
-
         let ratio = Double(display.width) / Double(display.height)
-
         switch self {
-        case .native:
-            return (display.width * scaleFactor, display.height * scaleFactor)
-        case .p1440:
-            return (Int(1440.0 * ratio), 1440)
-        case .p1080:
-            return (Int(1080.0 * ratio), 1080)
-        case .p720:
-            return (Int(720.0 * ratio), 720)
+        case .native: return (display.width * scaleFactor, display.height * scaleFactor)
+        case .p1440:  return (Int(1440.0 * ratio), 1440)
+        case .p1080:  return (Int(1080.0 * ratio), 1080)
+        case .p720:   return (Int(720.0 * ratio), 720)
         }
     }
 
@@ -51,6 +45,8 @@ enum RecordingFPS: Int, CaseIterable {
     var localizedName: String { "\(rawValue) fps" }
 }
 
+// MARK: - ScreenRecorder
+
 class ScreenRecorder: NSObject, ObservableObject {
     static let shared = ScreenRecorder()
 
@@ -58,14 +54,17 @@ class ScreenRecorder: NSObject, ObservableObject {
     @Published var resolution: RecordingResolution = .native
     @Published var fps: RecordingFPS = .fps30
     @Published var recordingDuration: TimeInterval = 0
+    @Published var recordSystemAudio: Bool = true
+    @Published var recordMicrophone: Bool = true
 
-    /// ID da janela de controles — preenchido pelo AppDelegate após criar a janela
     var controlsWindowID: CGWindowID = 0
 
     private var stream: SCStream?
     private var recordingOutput: SCRecordingOutput?
-    private var pendingOutputURL: URL?
+    private var pendingVideoURL: URL?
     private var recordingTimer: Timer?
+
+    // MARK: - Start
 
     func startRecording() {
         guard !isRecording else { return }
@@ -73,15 +72,32 @@ class ScreenRecorder: NSObject, ObservableObject {
     }
 
     private func _startRecording() async {
-        do {
-            let content = try await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: true)
+        guard CGPreflightScreenCaptureAccess() else {
+            CGRequestScreenCaptureAccess()
+            await MainActor.run {
+                _ = NSWorkspace.shared.open(
+                    URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture")!
+                )
+            }
+            return
+        }
 
-            guard let display = content.displays.first else {
-                print("[Boreal] No display found")
+        if recordMicrophone {
+            let granted = await AVCaptureDevice.requestAccess(for: .audio)
+            if !granted {
+                await MainActor.run {
+                    _ = NSWorkspace.shared.open(
+                        URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Microphone")!
+                    )
+                }
                 return
             }
+        }
 
-            // Exclui a janela de controles da captura
+        do {
+            let content = try await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: true)
+            guard let display = content.displays.first else { return }
+
             let excludedWindows = content.windows.filter { $0.windowID == controlsWindowID }
             let filter = SCContentFilter(display: display, excludingWindows: excludedWindows)
 
@@ -92,9 +108,18 @@ class ScreenRecorder: NSObject, ObservableObject {
             streamConfig.minimumFrameInterval = fps.frameInterval
             streamConfig.captureResolution = .best
             streamConfig.showsCursor = true
+            streamConfig.capturesAudio = recordSystemAudio
+            streamConfig.excludesCurrentProcessAudio = true
+
+            if recordMicrophone {
+                streamConfig.captureMicrophone = true
+                if let mic = MicrophoneManager.shared.currentMicrophone {
+                    streamConfig.microphoneCaptureDeviceID = mic.uniqueID
+                }
+            }
 
             let url = makeOutputURL()
-            pendingOutputURL = url
+            pendingVideoURL = url
 
             let outputConfig = SCRecordingOutputConfiguration()
             outputConfig.outputURL = url
@@ -117,30 +142,30 @@ class ScreenRecorder: NSObject, ObservableObject {
                 }
             }
         } catch {
-            print("[Boreal] Failed to start recording: \(error)")
+            print("[Boreal] Failed to start: \(error)")
         }
     }
 
+    // MARK: - Stop
+
     func stopRecording() {
         guard isRecording else { return }
-        Task {
-            try? await stream?.stopCapture()
-        }
+        Task { try? await stream?.stopCapture() }
     }
+
+    // MARK: - Helpers
 
     private func makeOutputURL() -> URL {
         let movies = FileManager.default.urls(for: .moviesDirectory, in: .userDomainMask).first!
         let folder = movies.appendingPathComponent("Boreal", isDirectory: true)
-        do {
-            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-        } catch {
-            print("[Boreal] Failed to create output folder: \(error)")
-        }
+        try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd HH.mm.ss"
         return folder.appendingPathComponent("Boreal \(formatter.string(from: Date())).mov")
     }
 }
+
+// MARK: - SCRecordingOutputDelegate
 
 extension ScreenRecorder: SCRecordingOutputDelegate {
     func recordingOutputDidFinishRecording(_ output: SCRecordingOutput) {
@@ -153,11 +178,9 @@ extension ScreenRecorder: SCRecordingOutputDelegate {
             self.recordingDuration = 0
             self.isRecording = false
 
-            if let url = self.pendingOutputURL {
-                print("[Boreal] Saved to \(url.path)")
-                NSWorkspace.shared.open(url.deletingLastPathComponent())
-            }
-            self.pendingOutputURL = nil
+            guard let url = self.pendingVideoURL else { return }
+            self.pendingVideoURL = nil
+            NSWorkspace.shared.open(url.deletingLastPathComponent())
         }
     }
 
@@ -170,7 +193,7 @@ extension ScreenRecorder: SCRecordingOutputDelegate {
             self.recordingTimer = nil
             self.recordingDuration = 0
             self.isRecording = false
-            self.pendingOutputURL = nil
+            self.pendingVideoURL = nil
             print("[Boreal] Recording error: \(error.localizedDescription)")
         }
     }

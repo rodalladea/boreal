@@ -43,6 +43,18 @@
         }
       }
     },
+    "NSMicrophoneUsageDescription" : {
+      "comment" : "Privacy - Microphone Usage Description",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "This app needs access to your microphone to record audio."
+          }
+        }
+      }
+    },
     "NSScreenCaptureUsageDescription" : {
       "comment" : "Privacy - Screen Capture Usage Description",
       "extractionState" : "stale",

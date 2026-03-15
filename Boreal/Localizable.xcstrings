@@ -81,16 +81,6 @@
         }
       }
     },
-    "Native" : {
-      "localizations" : {
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nativa"
-          }
-        }
-      }
-    },
     "Initializing camera..." : {
       "localizations" : {
         "pt-BR" : {
@@ -101,22 +91,22 @@
         }
       }
     },
-    "Record" : {
+    "Microphone" : {
       "localizations" : {
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Gravar"
+            "value" : "Microfone"
           }
         }
       }
     },
-    "Resolution" : {
+    "Native" : {
       "localizations" : {
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Resolução"
+            "value" : "Nativa"
           }
         }
       }
@@ -127,6 +117,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nenhuma câmera disponível"
+          }
+        }
+      }
+    },
+    "No microphones available" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhum microfone disponível"
           }
         }
       }
@@ -147,6 +147,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Encerrar Boreal"
+          }
+        }
+      }
+    },
+    "Record" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gravar"
+          }
+        }
+      }
+    },
+    "Resolution" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resolução"
           }
         }
       }
@@ -177,6 +197,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Parar Gravação"
+          }
+        }
+      }
+    },
+    "System Audio" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Áudio do Sistema"
           }
         }
       }

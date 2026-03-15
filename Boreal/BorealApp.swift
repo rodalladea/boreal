@@ -63,6 +63,26 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in self?.updateRecordingSettingsMenu() }
             .store(in: &cancellables)
+
+        ScreenRecorder.shared.$recordSystemAudio
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in self?.updateRecordingSettingsMenu() }
+            .store(in: &cancellables)
+
+        ScreenRecorder.shared.$recordMicrophone
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in self?.updateRecordingSettingsMenu() }
+            .store(in: &cancellables)
+
+        MicrophoneManager.shared.$availableMicrophones
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in self?.updateMicrophoneMenu() }
+            .store(in: &cancellables)
+
+        MicrophoneManager.shared.$currentMicrophone
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in self?.updateMicrophoneMenu() }
+            .store(in: &cancellables)
     }
 
     // MARK: - Menu Bar
@@ -77,6 +97,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let cameraMenuItem = NSMenuItem()
         cameraMenuItem.submenu = buildCameraMenu()
         mainMenu.addItem(cameraMenuItem)
+
+        let microphoneMenuItem = NSMenuItem()
+        microphoneMenuItem.submenu = buildMicrophoneMenu()
+        mainMenu.addItem(microphoneMenuItem)
 
         let recordingMenuItem = NSMenuItem()
         recordingMenuItem.submenu = buildRecordingMenu()
@@ -147,6 +171,26 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         menu.addItem(.separator())
 
+        let systemAudioItem = NSMenuItem(
+            title: String(localized: "System Audio"),
+            action: #selector(toggleSystemAudio(_:)),
+            keyEquivalent: ""
+        )
+        systemAudioItem.target = self
+        systemAudioItem.state = ScreenRecorder.shared.recordSystemAudio ? .on : .off
+        menu.addItem(systemAudioItem)
+
+        let micItem = NSMenuItem(
+            title: String(localized: "Microphone"),
+            action: #selector(toggleMicrophone(_:)),
+            keyEquivalent: ""
+        )
+        micItem.target = self
+        micItem.state = ScreenRecorder.shared.recordMicrophone ? .on : .off
+        menu.addItem(micItem)
+
+        menu.addItem(.separator())
+
         let toggleItem = NSMenuItem(
             title: String(localized: "Start Recording"),
             action: #selector(toggleRecording(_:)),
@@ -195,8 +239,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func updateRecordingSettingsMenu() {
         guard let mainMenu = NSApplication.shared.mainMenu,
-              mainMenu.items.count > 2,
-              let recordingMenu = mainMenu.items[2].submenu
+              mainMenu.items.count > 3,
+              let recordingMenu = mainMenu.items[3].submenu
         else { return }
 
         if let resSubmenu = recordingMenu.items.first?.submenu {
@@ -216,6 +260,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 }
             }
         }
+
+        // Items: 0=Resolution, 1=FPS, 2=separator, 3=SystemAudio, 4=Microphone, 5=separator, ...
+        if recordingMenu.items.count > 3 {
+            recordingMenu.items[3].state = ScreenRecorder.shared.recordSystemAudio ? .on : .off
+        }
+        if recordingMenu.items.count > 4 {
+            recordingMenu.items[4].state = ScreenRecorder.shared.recordMicrophone ? .on : .off
+        }
     }
 
     @objc private func toggleRecording(_ sender: NSMenuItem) {
@@ -224,6 +276,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         } else {
             ScreenRecorder.shared.startRecording()
         }
+    }
+
+    @objc private func toggleSystemAudio(_ sender: NSMenuItem) {
+        ScreenRecorder.shared.recordSystemAudio.toggle()
+    }
+
+    @objc private func toggleMicrophone(_ sender: NSMenuItem) {
+        ScreenRecorder.shared.recordMicrophone.toggle()
     }
 
     @objc private func resolutionMenuItemClicked(_ sender: NSMenuItem) {
@@ -287,6 +347,59 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let cameras = CameraManager.shared.availableCameras
         guard sender.tag < cameras.count else { return }
         CameraManager.shared.switchCamera(to: cameras[sender.tag])
+    }
+
+    // MARK: - Microphone Menu
+
+    private func buildMicrophoneMenu() -> NSMenu {
+        let menu = NSMenu(title: String(localized: "Microphone"))
+        populateMicrophoneMenu(menu)
+        return menu
+    }
+
+    private func populateMicrophoneMenu(_ menu: NSMenu) {
+        menu.removeAllItems()
+
+        let mics = MicrophoneManager.shared.availableMicrophones
+        let currentId = MicrophoneManager.shared.currentMicrophone?.uniqueID
+
+        if mics.isEmpty {
+            let emptyItem = NSMenuItem(
+                title: String(localized: "No microphones available"),
+                action: nil,
+                keyEquivalent: ""
+            )
+            emptyItem.isEnabled = false
+            menu.addItem(emptyItem)
+            return
+        }
+
+        for (index, mic) in mics.enumerated() {
+            let item = NSMenuItem(
+                title: mic.localizedName,
+                action: #selector(microphoneMenuItemClicked(_:)),
+                keyEquivalent: ""
+            )
+            item.target = self
+            item.tag = index
+            item.state = mic.uniqueID == currentId ? .on : .off
+            menu.addItem(item)
+        }
+    }
+
+    private func updateMicrophoneMenu() {
+        guard let mainMenu = NSApplication.shared.mainMenu,
+              mainMenu.items.count > 2,
+              let micMenu = mainMenu.items[2].submenu
+        else { return }
+
+        populateMicrophoneMenu(micMenu)
+    }
+
+    @objc private func microphoneMenuItemClicked(_ sender: NSMenuItem) {
+        let mics = MicrophoneManager.shared.availableMicrophones
+        guard sender.tag < mics.count else { return }
+        MicrophoneManager.shared.switchMicrophone(to: mics[sender.tag])
     }
 
     // MARK: - About
