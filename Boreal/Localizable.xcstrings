@@ -61,6 +61,16 @@
         }
       }
     },
+    "Finishing…" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finalizando…"
+          }
+        }
+      }
+    },
     "Hide Boreal" : {
       "localizations" : {
         "pt-BR" : {
@@ -167,6 +177,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Resolução"
+          }
+        }
+      }
+    },
+    "Select Camera" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selecionar Câmera"
+          }
+        }
+      }
+    },
+    "Select Microphone" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selecionar Microfone"
           }
         }
       }

@@ -53,6 +53,7 @@ class ScreenRecorder: NSObject, ObservableObject {
     private override init() { super.init() }
 
     @Published var isRecording = false
+    @Published var isStopping = false
     @Published var resolution: RecordingResolution = .native
     @Published var fps: RecordingFPS = .fps30
     @Published var recordingDuration: TimeInterval = 0
@@ -151,7 +152,8 @@ class ScreenRecorder: NSObject, ObservableObject {
     // MARK: - Stop
 
     func stopRecording() {
-        guard isRecording else { return }
+        guard isRecording, !isStopping else { return }
+        isStopping = true
         Task { try? await stream?.stopCapture() }
     }
 
@@ -179,6 +181,7 @@ extension ScreenRecorder: SCRecordingOutputDelegate {
             recordingTimer?.invalidate()
             recordingTimer = nil
             recordingDuration = 0
+            isStopping = false
             isRecording = false
 
             guard let url = pendingVideoURL else { return }
@@ -196,6 +199,7 @@ extension ScreenRecorder: SCRecordingOutputDelegate {
             recordingTimer?.invalidate()
             recordingTimer = nil
             recordingDuration = 0
+            isStopping = false
             isRecording = false
             pendingVideoURL = nil
             print("[Boreal] Recording error: \(error.localizedDescription)")
