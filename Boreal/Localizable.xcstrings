@@ -1,12 +1,12 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "A minimal floating camera overlay for macOS.\nPerfect for screen recordings." : {
+    "A minimal floating camera overlay and screen recorder for macOS." : {
       "localizations" : {
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Uma câmera flutuante e minimalista para macOS.\nPerfeita para gravações de tela."
+            "value" : "Uma câmera flutuante e gravador de tela minimalista para macOS."
           }
         }
       }

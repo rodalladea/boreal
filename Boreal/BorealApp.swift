@@ -398,7 +398,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @objc private func showAboutPanel(_ sender: Any?) {
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0.0"
 
-        let description = String(localized: "A minimal floating camera overlay for macOS.\nPerfect for screen recordings.")
+        let description = String(localized: "A minimal floating camera overlay and screen recorder for macOS.")
 
         let credits = NSAttributedString(
             string: description,
