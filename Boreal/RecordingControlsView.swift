@@ -18,6 +18,19 @@ struct RecordingControlsView: View {
                 .foregroundStyle(recorder.isRecording ? .primary : .secondary)
                 .frame(width: 40, alignment: .leading)
 
+            // Camera visibility toggle
+            Button {
+                camera.isCameraVisible.toggle()
+            } label: {
+                Image(systemName: camera.isCameraVisible ? "video.fill" : "video.slash.fill")
+                    .font(.system(size: 13))
+                    .foregroundStyle(camera.isCameraVisible ? .secondary : .primary)
+                    .frame(width: 16, height: 16)
+            }
+            .buttonStyle(.plain)
+            .fixedSize()
+            .help(camera.isCameraVisible ? String(localized: "Hide Camera") : String(localized: "Show Camera"))
+
             Spacer()
 
             // Camera selector

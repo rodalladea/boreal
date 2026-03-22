@@ -89,6 +89,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in self?.updateMicrophoneMenu() }
             .store(in: &cancellables)
+
+        CameraManager.shared.$isCameraVisible
+            .receive(on: RunLoop.main)
+            .sink { [weak self] visible in self?.setCameraWindowVisible(visible) }
+            .store(in: &cancellables)
     }
 
     // MARK: - Menu Bar
@@ -478,6 +483,33 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         panel.setFrameOrigin(NSPoint(x: xPos, y: yPos))
         // controlsWindow is a child window and follows the parent automatically
+    }
+
+    private func setCameraWindowVisible(_ visible: Bool) {
+        guard let overlay = overlayWindow, let controls = controlsWindow, let screen = NSScreen.main else { return }
+
+        let padding: CGFloat = 20
+        let controlsHeight: CGFloat = 44
+
+        if visible {
+            let newControlsOrigin = NSPoint(
+                x: overlay.frame.origin.x,
+                y: overlay.frame.origin.y - controlsHeight - 4
+            )
+            controls.setFrameOrigin(newControlsOrigin)
+            overlay.contentView?.isHidden = false
+            overlay.hasShadow = true
+            overlay.addChildWindow(controls, ordered: .above)
+        } else {
+            overlay.removeChildWindow(controls)
+            overlay.contentView?.isHidden = true
+            overlay.hasShadow = false
+
+            let xPos = screen.visibleFrame.maxX - controls.frame.width - padding
+            let yPos = screen.visibleFrame.maxY - controlsHeight - padding
+            controls.setFrameOrigin(NSPoint(x: xPos, y: yPos))
+            controls.orderFrontRegardless()
+        }
     }
 
     func createOverlayWindow() {

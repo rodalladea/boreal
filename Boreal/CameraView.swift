@@ -137,6 +137,7 @@ class CameraManager: ObservableObject {
     @Published var isSettingUpCamera = true
     @Published var availableCameras: [AVCaptureDevice] = []
     @Published var currentCamera: AVCaptureDevice?
+    @Published var isCameraVisible: Bool = true
 
     let session = AVCaptureSession()
 

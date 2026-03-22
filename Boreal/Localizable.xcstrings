@@ -81,6 +81,16 @@
         }
       }
     },
+    "Hide Camera" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ocultar Câmera"
+          }
+        }
+      }
+    },
     "Hide Others" : {
       "localizations" : {
         "pt-BR" : {
@@ -207,6 +217,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mostrar Tudo"
+          }
+        }
+      }
+    },
+    "Show Camera" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar Câmera"
           }
         }
       }
